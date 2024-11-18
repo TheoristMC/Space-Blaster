@@ -2,7 +2,7 @@ body, html {
   margin: 0;
   padding: 0;
   overflow: hidden;
-
+  
   height: 100dvh;
   background-color: rgb(6, 5, 27);
 
@@ -15,7 +15,7 @@ body, html {
 .isBullet {
   width: 16px;
   height: 16px;
-  margin: auto;
+  position: absolute;
 
   background-color: aquamarine;
   border-radius: 100%;
@@ -46,4 +46,6 @@ body, html {
   background-image: url('img/space.jpg');
   background-size: cover;
   background-repeat: repeat-y;
+
+  position: relative;
 }

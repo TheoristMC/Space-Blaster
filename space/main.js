@@ -1,4 +1,5 @@
 const GameBoundary = document.getElementById('gameBoundary');
+const GameScore = document.getElementById('gameScore');
 
 const GameRule = {
   spaceshipSpd: 5,
@@ -7,17 +8,26 @@ const GameRule = {
   spaceshipShootCount: 0,
   isReloading: false, // To prevent setTimeout from stacking
 
+  getElemPos(parent, child) {
+    const childRect = child.getBoundingClientRect();
+    const parentRect = parent.getBoundingClientRect();
+    return { x: childRect.left - parentRect.left, y: childRect.top - parentRect.top };  
+  },
+
   scrollBgSpd: 0.4,
   bgY: 0
 };
 
 function spawnAndShootBullets() {
   const spaceship = document.getElementById('spaceship');
+  const { x, y } = GameRule.getElemPos(GameBoundary, spaceship);
 
   const bullet = document.createElement('div');
   bullet.classList.add('isBullet');
+  bullet.style.left = `${x + 20}px`; // 18 means. bullet width + 4(to center it to spaceship)
+  bullet.style.top = `${y}px`;
 
-  spaceship.appendChild(bullet);
+  GameBoundary.appendChild(bullet);
 
   // Shoot the bullet
   let bulletY = 0;
@@ -26,11 +36,11 @@ function spawnAndShootBullets() {
     bulletY += -5;
     bullet.style.transform = `translateY(${bulletY}px)`;
 
-    if (Math.abs(bulletY) > (GameBoundary.clientHeight - spaceship.clientHeight - bullet.clientHeight)) {
+    if (Math.abs(bulletY) > (GameBoundary.clientHeight - (spaceship.clientHeight * 2) - bullet.clientHeight)) {
       clearInterval(bulletInterval);
       bullet.remove();
     }
-  }, 16); // Approx. 60 fps
+  }, 16);
 };
 
 function moveShip(direction) {
@@ -51,10 +61,14 @@ function spawnShip() {
   GameBoundary.appendChild(spaceship);
 };
 
-function scrollBackground() {
+function scrollBackgroundAndUpdateScore() {
   GameRule.bgY += GameRule.scrollBgSpd;
   GameBoundary.style.backgroundPositionY = `${GameRule.bgY}px`;
-  requestAnimationFrame(scrollBackground);
+
+  // Might as well change the score text
+  GameScore.textContent = `Score: 0 Ammo: ${GameRule.spaceshipAmmo - GameRule.spaceshipShootCount}/${GameRule.spaceshipAmmo}${GameRule.spaceshipShootCount >= GameRule.spaceshipAmmo ? '(Press spacebar to reload)' : ''}`;
+
+  requestAnimationFrame(scrollBackgroundAndUpdateScore);
 };
 
 document.addEventListener('keydown', (ev) => {
@@ -77,7 +91,7 @@ document.addEventListener('keydown', (ev) => {
         setTimeout(() =>{
           GameRule.spaceshipShootCount = 0;
           GameRule.isReloading = false;
-        }, 1500); // 1.5 seconds CD
+        }, 1000); // 1 seconds CD
       }
       break;
   }
@@ -86,7 +100,7 @@ document.addEventListener('keydown', (ev) => {
 });
 
 function startup() {
-  scrollBackground();
+  scrollBackgroundAndUpdateScore();
   spawnShip();
 };
 
