@@ -1,9 +1,13 @@
 const GameBoundary = document.getElementById('gameBoundary');
 
 const GameRule = {
-  scrollBgSpd: 0.4,
   spaceshipSpd: 5,
   spaceshipX: 0,
+  spaceshipAmmo: 4,
+  spaceshipShootCount: 0,
+  isReloading: false, // To prevent setTimeout from stacking
+
+  scrollBgSpd: 0.4,
   bgY: 0
 };
 
@@ -55,16 +59,26 @@ function scrollBackground() {
 
 document.addEventListener('keydown', (ev) => {
   let direction = 0;
-
   switch (ev.code.toString().toUpperCase()) {
+    case 'KEYD':
     case 'ARROWRIGHT':
       direction = 1;
       break;
+    case 'KEYA':
     case 'ARROWLEFT':
       direction = -1;
       break;
     case 'SPACE':
-      spawnAndShootBullets();
+      if (GameRule.spaceshipShootCount < GameRule.spaceshipAmmo) {
+        GameRule.spaceshipShootCount++
+        spawnAndShootBullets();
+      } else if (!GameRule.isReloading) { 
+        GameRule.isReloading = true;
+        setTimeout(() =>{
+          GameRule.spaceshipShootCount = 0;
+          GameRule.isReloading = false;
+        }, 1500); // 1.5 seconds CD
+      }
       break;
   }
 

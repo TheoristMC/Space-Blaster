@@ -4,4 +4,4 @@ This is a web-game which is based on Javascript that is made by 14 year old to t
 
 ## Tutorial
 
-Move the spaceship with arrow-keys and press spacebar to blast! Only supports PC by now.
+Move the spaceship with (arrow-keys/A, D) and press spacebar to blast! Only supports PC by now.
