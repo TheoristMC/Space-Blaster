@@ -2,13 +2,13 @@ const GameBoundary = document.getElementById('gameBoundary');
 const PlayButton = document.getElementById('playButton');
 const GameScore = document.getElementById('gameScore');
 
-// BUGS:
-// Score is being subtracted by 5 even if the enemy isnt out of boundary yet
+// NEXT:
+// Make a restart game implementation
 
 const GameRule = {
   spaceshipSpd: 5,
   spaceshipX: 0,
-  spaceshipAmmo: 4,
+  spaceshipAmmo: 8,
   spaceshipShootCount: 0,
   isReloading: false, // To prevent setTimeout from stacking
 
