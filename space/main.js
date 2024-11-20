@@ -1,5 +1,9 @@
 const GameBoundary = document.getElementById('gameBoundary');
+const PlayButton = document.getElementById('playButton');
 const GameScore = document.getElementById('gameScore');
+
+// BUGS:
+// Score is being subtracted by 5 even if the enemy isnt out of boundary yet
 
 const GameRule = {
   spaceshipSpd: 5,
@@ -10,11 +14,17 @@ const GameRule = {
 
   enemyShipSpd: 1.4,
   gameScore: 0,
+  isNewGame: true,
 
   getElemPos(parent, child) {
     const childRect = child.getBoundingClientRect();
     const parentRect = parent.getBoundingClientRect();
     return { x: childRect.left - parentRect.left, y: childRect.top - parentRect.top };  
+  },
+  playAudio(audio, music = false) {
+    const audioObj = new Audio(`sounds/${audio}`);
+    audioObj.loop = music;
+    audioObj.play();
   },
 
   scrollBgSpd: 0.4,
@@ -25,6 +35,7 @@ class EnemyShip {
   constructor(x, y, speed) {
     this.element = document.createElement('div');
     this.element.classList.add('enemyShip');
+    this.element.enemyObject = this; // Add the instance data to element so we can reference it later on
     this.element.style.left = `${x}px`;
     this.element.style.top = `${y}px`;
     GameBoundary.appendChild(this.element);
@@ -41,11 +52,11 @@ class EnemyShip {
     const currentY = parseFloat(this.element.style.top);
     this.element.style.top = `${currentY + this.speed}px`;
 
-    // 50 means height of the EnemyShip
-    if (currentY > (GameBoundary.clientHeight - 50)) {
+    // 50 means height of the EnemyShip 
+    if (currentY >= (GameBoundary.clientHeight - 50)) {
       this.destroy();
       GameRule.gameScore -= 5;
-      console.log('hi')
+      GameRule.playAudio('enemy_shot.wav');
     }
   }
 
@@ -61,7 +72,7 @@ function spawnEnemies() {
     const enemyX = Math.random() * (GameBoundary.clientWidth - 50); // 50 means width of the EnemyShip
     new EnemyShip(enemyX, 0, GameRule.enemyShipSpd);
   }, 2000);
-}
+};
 
 function checkIfEnemyShot() {
   const bullets = Array.from(document.getElementsByClassName('isBullet'));
@@ -79,10 +90,21 @@ function checkIfEnemyShot() {
         bulletRect.bottom > enemyRect.top
       ) {
         bullet.remove();
-        enemy.remove();
-        enemy.isDestroyed = true;
+
+        // Find the enemy instance and destroy it
+        // I figured this is the best way to do it since the last method is oversimplified and buggy
+        // Checks for all children of GameBoundary and get it's instance then destroy it
+        const enemyShipInstance = Array.from(GameBoundary.children)
+          .filter((e) => e.classList.contains('enemyShip'))
+          .find((e) => e === enemy);
+
+        if (enemyShipInstance) {
+          const enemyObj = enemyShipInstance.enemyObject;
+          enemyObj.destroy();
+        }
 
         GameRule.gameScore += 10;
+        GameRule.playAudio('enemy_shot.wav');
       }
     });
   });
@@ -98,6 +120,7 @@ function spawnAndShootBullets() {
   bullet.style.top = `${y}px`;
 
   GameBoundary.appendChild(bullet);
+  GameRule.playAudio('laser_shoot.wav');
 
   // Shoot the bullet
   let bulletY = 0;
@@ -143,6 +166,8 @@ function updateEveryFrame() {
 };
 
 document.addEventListener('keydown', (ev) => {
+  if (GameRule.isNewGame) return;
+
   let direction = 0;
   switch (ev.code.toString().toUpperCase()) {
     case 'KEYD':
@@ -174,6 +199,9 @@ function startup() {
   updateEveryFrame();
   spawnShip();
   spawnEnemies();
-};
 
-startup();
+  PlayButton.style.display = 'none';
+
+  GameRule.isNewGame = false,
+  GameRule.playAudio('bg_music.mp3', true);
+};
